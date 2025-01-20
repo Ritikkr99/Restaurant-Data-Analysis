@@ -1,0 +1,248 @@
+<html>
+<head>
+<title>COGNIFYZ - LEVEL 1 & 2.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #6aab73;}
+.s4 { color: #2aacb8;}
+.s5 { color: #7a7e85;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+COGNIFYZ - LEVEL 1 & 2.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">pandas </span><span class="s0">as </span><span class="s1">pd</span>
+<span class="s0">import </span><span class="s1">numpy </span><span class="s0">as </span><span class="s1">np</span>
+<span class="s0">import </span><span class="s1">matplotlib</span><span class="s2">.</span><span class="s1">pyplot </span><span class="s0">as </span><span class="s1">plt</span>
+<span class="s0">import </span><span class="s1">seaborn </span><span class="s0">as </span><span class="s1">sns</span>
+<span class="s0">from </span><span class="s1">sklearn</span><span class="s2">.</span><span class="s1">cluster </span><span class="s0">import </span><span class="s1">KMeans</span>
+<span class="s0">import </span><span class="s1">folium</span>
+
+<span class="s1">Data </span><span class="s2">= </span><span class="s1">pd</span><span class="s2">.</span><span class="s1">read_csv</span><span class="s2">(</span><span class="s3">r&quot;C:\Users\Kartik Kumar\Downloads\Dataset .csv&quot;</span><span class="s2">, </span><span class="s1">delimiter</span><span class="s2">=</span><span class="s3">','</span><span class="s2">, </span><span class="s1">quotechar</span><span class="s2">=</span><span class="s3">'&quot;'</span><span class="s2">, </span><span class="s1">on_bad_lines</span><span class="s2">=</span><span class="s3">'skip'</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">Data</span><span class="s2">.</span><span class="s1">head</span><span class="s2">(</span><span class="s4">20</span><span class="s2">))</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">Data</span><span class="s2">.</span><span class="s1">info</span><span class="s2">())</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">Data</span><span class="s2">.</span><span class="s1">describe</span><span class="s2">())</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Cuisines'</span><span class="s2">].</span><span class="s1">isnull</span><span class="s2">().</span><span class="s1">sum</span><span class="s2">())</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">Data</span><span class="s2">.</span><span class="s1">dropna</span><span class="s2">(</span><span class="s1">subset</span><span class="s2">=[</span><span class="s3">'Cuisines'</span><span class="s2">]))</span>
+<span class="s1">Data </span><span class="s2">= </span><span class="s1">Data</span><span class="s2">.</span><span class="s1">drop_duplicates</span><span class="s2">()</span>
+
+
+<span class="s5"># (LEVEL 1)</span>
+<span class="s5"># TASK 1 - TOP 3 CUISINES</span>
+<span class="s1">Cuisines </span><span class="s2">= </span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Cuisines'</span><span class="s2">].</span><span class="s1">dropna</span><span class="s2">().</span><span class="s1">str</span><span class="s2">.</span><span class="s1">split</span><span class="s2">(</span><span class="s3">', '</span><span class="s2">)</span>
+<span class="s1">flattened_cuisines </span><span class="s2">= [</span><span class="s1">Cuisines </span><span class="s0">for </span><span class="s1">sublist </span><span class="s0">in </span><span class="s1">Cuisines </span><span class="s0">for </span><span class="s1">Cuisines </span><span class="s0">in </span><span class="s1">sublist</span><span class="s2">]</span>
+<span class="s1">Cuisines_counts </span><span class="s2">= </span><span class="s1">pd</span><span class="s2">.</span><span class="s1">Series</span><span class="s2">(</span><span class="s1">flattened_cuisines</span><span class="s2">).</span><span class="s1">value_counts</span><span class="s2">()</span>
+<span class="s1">top_3_cuisines </span><span class="s2">= </span><span class="s1">Cuisines_counts</span><span class="s2">.</span><span class="s1">head</span><span class="s2">(</span><span class="s4">3</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">&quot;Top 3 most common cuisines:&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">top_3_cuisines</span><span class="s2">)</span>
+
+<span class="s5"># PERCENTAGE OF RESTAURANTS THAT SERVE EACH OF THE TOP CUISINES</span>
+<span class="s1">Total_restaurants </span><span class="s2">= </span><span class="s1">len</span><span class="s2">(</span><span class="s1">Data</span><span class="s2">)</span>
+<span class="s1">Cuisines_percentages </span><span class="s2">= (</span><span class="s1">Cuisines_counts </span><span class="s2">/ </span><span class="s1">Total_restaurants</span><span class="s2">) * </span><span class="s4">100</span>
+<span class="s1">Top_Cuisines_Percentage </span><span class="s2">= </span><span class="s1">Cuisines_percentages</span><span class="s2">.</span><span class="s1">head</span><span class="s2">(</span><span class="s4">3</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">&quot;Top cuisines with percentages:&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">Top_Cuisines_Percentage</span><span class="s2">)</span>
+
+<span class="s5"># TASK 2 - IDENTIFY THE CITY WITH THE HIGHEST NUMBER OF RESTAURANTS IN THE DATASET</span>
+<span class="s1">City_Counts </span><span class="s2">= </span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'City'</span><span class="s2">].</span><span class="s1">value_counts</span><span class="s2">()</span>
+<span class="s1">top_city </span><span class="s2">= </span><span class="s1">City_Counts</span><span class="s2">.</span><span class="s1">idxmax</span><span class="s2">()</span>
+<span class="s1">top_city_count </span><span class="s2">= </span><span class="s1">City_Counts</span><span class="s2">.</span><span class="s1">max</span><span class="s2">()</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">f&quot;The city with the highest number of restaurants is </span><span class="s0">{</span><span class="s1">top_city</span><span class="s0">} </span><span class="s3">with </span><span class="s0">{</span><span class="s1">top_city_count</span><span class="s0">} </span><span class="s3">restaurants.&quot;</span><span class="s2">)</span>
+
+<span class="s5"># CALCULATE THE AVERAGE RATING FOR RESTAURANTS IN EACH CITY</span>
+<span class="s1">Data</span><span class="s2">[</span><span class="s3">'Votes'</span><span class="s2">] = </span><span class="s1">pd</span><span class="s2">.</span><span class="s1">to_numeric</span><span class="s2">(</span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Votes'</span><span class="s2">], </span><span class="s1">errors</span><span class="s2">=</span><span class="s3">'coerce'</span><span class="s2">)</span>
+<span class="s1">Average_rating_by_city </span><span class="s2">= </span><span class="s1">Data</span><span class="s2">.</span><span class="s1">groupby</span><span class="s2">(</span><span class="s3">'City'</span><span class="s2">)[</span><span class="s3">'Votes'</span><span class="s2">].</span><span class="s1">mean</span><span class="s2">()</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">&quot;Average rating for restaurants in each city:&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">Average_rating_by_city</span><span class="s2">)</span>
+
+<span class="s5"># DETERMINE THE CITY WITH THE HIGHEST AVERAGE RATING</span>
+<span class="s1">top_city </span><span class="s2">= </span><span class="s1">Average_rating_by_city</span><span class="s2">.</span><span class="s1">idxmax</span><span class="s2">()</span>
+<span class="s1">top_average_rating </span><span class="s2">= </span><span class="s1">Average_rating_by_city</span><span class="s2">.</span><span class="s1">max</span><span class="s2">()</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">f&quot;The city with the highest average rating is </span><span class="s0">{</span><span class="s1">top_city</span><span class="s0">} </span><span class="s3">with an average of </span><span class="s0">{</span><span class="s1">top_average_rating</span><span class="s0">:</span><span class="s3">.1f</span><span class="s0">}</span><span class="s3">.&quot;</span><span class="s2">)</span>
+
+<span class="s5"># TASK 3 - (PRICE RANGE DISTRIBUTION)</span>
+<span class="s5">#BAR CHART TO VISUALISE THE DISTRIBUTION OF THE PRICE RANGE AMONG THE RESTAURANTS</span>
+
+<span class="s1">price_range_counts </span><span class="s2">= </span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Price range'</span><span class="s2">].</span><span class="s1">value_counts</span><span class="s2">()</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">figure</span><span class="s2">(</span><span class="s1">figsize</span><span class="s2">=(</span><span class="s4">8</span><span class="s2">, </span><span class="s4">6</span><span class="s2">))</span>
+<span class="s1">price_range_counts</span><span class="s2">.</span><span class="s1">sort_index</span><span class="s2">().</span><span class="s1">plot</span><span class="s2">(</span><span class="s1">kind</span><span class="s2">=</span><span class="s3">'bar'</span><span class="s2">, </span><span class="s1">color</span><span class="s2">=</span><span class="s3">'skyblue'</span><span class="s2">, </span><span class="s1">edgecolor</span><span class="s2">=</span><span class="s3">'black'</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">title</span><span class="s2">(</span><span class="s3">'Distribution of Price Ranges Among Restaurants'</span><span class="s2">, </span><span class="s1">fontsize</span><span class="s2">=</span><span class="s4">14</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">xlabel</span><span class="s2">(</span><span class="s3">'Price Range'</span><span class="s2">, </span><span class="s1">fontsize</span><span class="s2">=</span><span class="s4">12</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">ylabel</span><span class="s2">(</span><span class="s3">'Number of Restaurants'</span><span class="s2">, </span><span class="s1">fontsize</span><span class="s2">=</span><span class="s4">12</span><span class="s2">)</span>
+
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">xticks</span><span class="s2">(</span><span class="s1">rotation</span><span class="s2">=</span><span class="s4">0</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">grid</span><span class="s2">(</span><span class="s1">axis</span><span class="s2">=</span><span class="s3">'y'</span><span class="s2">, </span><span class="s1">linestyle</span><span class="s2">=</span><span class="s3">'--'</span><span class="s2">, </span><span class="s1">alpha</span><span class="s2">=</span><span class="s4">0.7</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">tight_layout</span><span class="s2">()</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">show</span><span class="s2">()</span>
+
+
+<span class="s5"># CALCULATE THE PERCENTAGE OF RESTAURANTS IN EACH PRICE RANGE CATEGORY</span>
+
+<span class="s1">price_range_counts </span><span class="s2">= </span><span class="s1">Data</span><span class="s2">[</span><span class="s3">&quot;Price range&quot;</span><span class="s2">].</span><span class="s1">value_counts</span><span class="s2">()</span>
+<span class="s1">total_restaurants </span><span class="s2">= </span><span class="s1">len</span><span class="s2">(</span><span class="s1">Data</span><span class="s2">)</span>
+<span class="s1">price_range_percentages </span><span class="s2">= (</span><span class="s1">price_range_counts </span><span class="s2">/ </span><span class="s1">total_restaurants</span><span class="s2">) * </span><span class="s4">100</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">&quot;Percentage of restaurants in each price range:&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">price_range_percentages</span><span class="s2">)</span>
+
+
+
+<span class="s5"># TASK 4 - (ONLINE DELIVERY)</span>
+<span class="s5"># DETERMINE THE PERCENTAGE OF RESTAURANTS THAT OFFER ONLINE DELIVERY</span>
+
+<span class="s1">Data</span><span class="s2">[</span><span class="s3">'Has Online delivery'</span><span class="s2">] = </span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Has Online delivery'</span><span class="s2">].</span><span class="s1">str</span><span class="s2">.</span><span class="s1">strip</span><span class="s2">().</span><span class="s1">str</span><span class="s2">.</span><span class="s1">lower</span><span class="s2">()</span>
+<span class="s1">total_restaurants </span><span class="s2">= </span><span class="s1">len</span><span class="s2">(</span><span class="s1">Data</span><span class="s2">)</span>
+<span class="s1">online_delivery_count </span><span class="s2">= </span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Has Online delivery'</span><span class="s2">].</span><span class="s1">value_counts</span><span class="s2">().</span><span class="s1">get</span><span class="s2">(</span><span class="s3">'yes'</span><span class="s2">, </span><span class="s4">0</span><span class="s2">)</span>
+<span class="s1">online_delivery_percentage </span><span class="s2">= (</span><span class="s1">online_delivery_count </span><span class="s2">/ </span><span class="s1">total_restaurants</span><span class="s2">) * </span><span class="s4">100</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">f&quot;Percentage of restaurants that offer online delivery: </span><span class="s0">{</span><span class="s1">online_delivery_percentage</span><span class="s0">:</span><span class="s3">.2f</span><span class="s0">}</span><span class="s3">%&quot;</span><span class="s2">)</span>
+
+
+<span class="s5"># COMPARE THE AVERAGE RATINGS OF RESTAURANTS WITH AND WITHOUT ONLINE DELIVERY</span>
+
+<span class="s1">with_online_delivery </span><span class="s2">= </span><span class="s1">Data</span><span class="s2">[</span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Has Online delivery'</span><span class="s2">] == </span><span class="s3">'yes'</span><span class="s2">]</span>
+<span class="s1">without_online_delivery </span><span class="s2">= </span><span class="s1">Data</span><span class="s2">[</span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Has Online delivery'</span><span class="s2">] == </span><span class="s3">'no'</span><span class="s2">]</span>
+<span class="s1">avg_rating_with_delivery </span><span class="s2">= </span><span class="s1">with_online_delivery</span><span class="s2">[</span><span class="s3">'Aggregate rating'</span><span class="s2">].</span><span class="s1">mean</span><span class="s2">()</span>
+<span class="s1">avg_rating_without_delivery </span><span class="s2">= </span><span class="s1">without_online_delivery</span><span class="s2">[</span><span class="s3">'Aggregate rating'</span><span class="s2">].</span><span class="s1">mean</span><span class="s2">()</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">f&quot;Average rating of restaurants with online delivery: </span><span class="s0">{</span><span class="s1">avg_rating_with_delivery</span><span class="s0">:</span><span class="s3">.2f</span><span class="s0">}</span><span class="s3">&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">f&quot;Average rating of restaurants without online delivery: </span><span class="s0">{</span><span class="s1">avg_rating_without_delivery</span><span class="s0">:</span><span class="s3">.2f</span><span class="s0">}</span><span class="s3">&quot;</span><span class="s2">)</span>
+
+
+
+
+
+<span class="s5"># # (LEVEL 2)</span>
+<span class="s5"># # TASK 1 - RESTAURANT RATINGS</span>
+
+<span class="s5"># DISTRIBUTION OF THE AGGREGATE RATING &amp; DETERMINE THE MOST COMMON RATING RANGE</span>
+<span class="s1">Data</span><span class="s2">[</span><span class="s3">'Aggregate rating'</span><span class="s2">] = </span><span class="s1">pd</span><span class="s2">.</span><span class="s1">to_numeric</span><span class="s2">(</span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Aggregate rating'</span><span class="s2">], </span><span class="s1">errors</span><span class="s2">=</span><span class="s3">'coerce'</span><span class="s2">)</span>
+<span class="s1">bins </span><span class="s2">= [</span><span class="s4">0</span><span class="s2">, </span><span class="s4">1</span><span class="s2">, </span><span class="s4">2</span><span class="s2">, </span><span class="s4">3</span><span class="s2">, </span><span class="s4">4</span><span class="s2">, </span><span class="s4">5</span><span class="s2">]</span>
+<span class="s1">labels </span><span class="s2">= [</span><span class="s3">'0-1'</span><span class="s2">, </span><span class="s3">'1-2'</span><span class="s2">, </span><span class="s3">'2-3'</span><span class="s2">, </span><span class="s3">'3-4'</span><span class="s2">, </span><span class="s3">'4-5'</span><span class="s2">]</span>
+<span class="s1">Data</span><span class="s2">[</span><span class="s3">'Rating Range'</span><span class="s2">] = </span><span class="s1">pd</span><span class="s2">.</span><span class="s1">cut</span><span class="s2">(</span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Aggregate rating'</span><span class="s2">], </span><span class="s1">bins</span><span class="s2">=</span><span class="s1">bins</span><span class="s2">, </span><span class="s1">labels</span><span class="s2">=</span><span class="s1">labels</span><span class="s2">, </span><span class="s1">include_lowest</span><span class="s2">=</span><span class="s0">True</span><span class="s2">)</span>
+<span class="s1">rating_distribution </span><span class="s2">= </span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Rating Range'</span><span class="s2">].</span><span class="s1">value_counts</span><span class="s2">().</span><span class="s1">sort_index</span><span class="s2">()</span>
+<span class="s1">most_common_range </span><span class="s2">= </span><span class="s1">rating_distribution</span><span class="s2">.</span><span class="s1">idxmax</span><span class="s2">()</span>
+<span class="s1">most_common_count </span><span class="s2">= </span><span class="s1">rating_distribution</span><span class="s2">.</span><span class="s1">loc</span><span class="s2">[</span><span class="s1">most_common_range</span><span class="s2">]</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">&quot;Rating Distribution:&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">rating_distribution</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">f&quot;</span><span class="s0">\n</span><span class="s3">The most common rating range is </span><span class="s0">{</span><span class="s1">most_common_range</span><span class="s0">} </span><span class="s3">with </span><span class="s0">{</span><span class="s1">most_common_count</span><span class="s0">} </span><span class="s3">restaurants.&quot;</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">figure</span><span class="s2">(</span><span class="s1">figsize</span><span class="s2">=(</span><span class="s4">8</span><span class="s2">, </span><span class="s4">6</span><span class="s2">))</span>
+<span class="s1">rating_distribution</span><span class="s2">.</span><span class="s1">plot</span><span class="s2">(</span><span class="s1">kind</span><span class="s2">=</span><span class="s3">'bar'</span><span class="s2">, </span><span class="s1">color</span><span class="s2">=</span><span class="s3">'skyblue'</span><span class="s2">, </span><span class="s1">edgecolor</span><span class="s2">=</span><span class="s3">'black'</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">title</span><span class="s2">(</span><span class="s3">'Distribution of Aggregate Ratings'</span><span class="s2">, </span><span class="s1">fontsize</span><span class="s2">=</span><span class="s4">14</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">xlabel</span><span class="s2">(</span><span class="s3">'Rating Range'</span><span class="s2">, </span><span class="s1">fontsize</span><span class="s2">=</span><span class="s4">12</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">ylabel</span><span class="s2">(</span><span class="s3">'Number of Restaurants'</span><span class="s2">, </span><span class="s1">fontsize</span><span class="s2">=</span><span class="s4">12</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">xticks</span><span class="s2">(</span><span class="s1">rotation</span><span class="s2">=</span><span class="s4">0</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">grid</span><span class="s2">(</span><span class="s1">axis</span><span class="s2">=</span><span class="s3">'y'</span><span class="s2">, </span><span class="s1">linestyle</span><span class="s2">=</span><span class="s3">'--'</span><span class="s2">, </span><span class="s1">alpha</span><span class="s2">=</span><span class="s4">0.7</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">tight_layout</span><span class="s2">()</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">show</span><span class="s2">()</span>
+
+<span class="s5"># AVERAGE NUMBER OF VOTES RECEIVED BY THE RESTAURANTS</span>
+<span class="s1">Data</span><span class="s2">[</span><span class="s3">'Votes'</span><span class="s2">] = </span><span class="s1">pd</span><span class="s2">.</span><span class="s1">to_numeric</span><span class="s2">(</span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Votes'</span><span class="s2">], </span><span class="s1">errors</span><span class="s2">=</span><span class="s3">'coerce'</span><span class="s2">)</span>
+<span class="s1">average_votes </span><span class="s2">= </span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Votes'</span><span class="s2">].</span><span class="s1">mean</span><span class="s2">()</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">f&quot;The average number of votes received by restaurants is </span><span class="s0">{</span><span class="s1">average_votes</span><span class="s0">}</span><span class="s3">.&quot;</span><span class="s2">)</span>
+
+
+<span class="s5"># TASK 2 - RESTAURANT RATINGS (CUISINE COMBINATION)</span>
+
+<span class="s5"># MOST COMMON COMBINATIONS OF CUISINES</span>
+<span class="s1">cuisine_combination </span><span class="s2">= </span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Cuisines'</span><span class="s2">].</span><span class="s1">value_counts</span><span class="s2">()</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">&quot;Most common cuisine combination&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">cuisine_combination</span><span class="s2">.</span><span class="s1">head</span><span class="s2">(</span><span class="s4">10</span><span class="s2">))</span>
+
+
+<span class="s5"># DETERMINE IF CERTAIN CUISINE COMBINATIONS TEND TO HAVE HIGHER RATINGS</span>
+
+<span class="s1">cuisine_rating </span><span class="s2">= </span><span class="s1">Data</span><span class="s2">.</span><span class="s1">groupby</span><span class="s2">(</span><span class="s3">'Cuisines'</span><span class="s2">)[</span><span class="s3">'Aggregate rating'</span><span class="s2">].</span><span class="s1">mean</span><span class="s2">()</span>
+<span class="s1">sorted_cuisine_rating </span><span class="s2">= </span><span class="s1">cuisine_rating</span><span class="s2">.</span><span class="s1">sort_values</span><span class="s2">(</span><span class="s1">ascending</span><span class="s2">=</span><span class="s0">False</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">&quot;Cuisine combination with the highest average ratings:&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">sorted_cuisine_rating</span><span class="s2">.</span><span class="s1">head</span><span class="s2">(</span><span class="s4">10</span><span class="s2">))</span>
+
+
+<span class="s5"># TASK 3 - GEOGRAPHIC COMBINATION</span>
+
+<span class="s5"># LOCATIONS OF RESTAURANTS ON THE MAP USING LONGITUDE &amp; LATITUDE CO-ORDINATES</span>
+
+<span class="s1">Data</span><span class="s2">[</span><span class="s3">'Latitude'</span><span class="s2">] = </span><span class="s1">pd</span><span class="s2">.</span><span class="s1">to_numeric</span><span class="s2">(</span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Latitude'</span><span class="s2">], </span><span class="s1">errors</span><span class="s2">=</span><span class="s3">'coerce'</span><span class="s2">)</span>
+<span class="s1">Data</span><span class="s2">[</span><span class="s3">'Longitude'</span><span class="s2">] = </span><span class="s1">pd</span><span class="s2">.</span><span class="s1">to_numeric</span><span class="s2">(</span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Longitude'</span><span class="s2">], </span><span class="s1">errors</span><span class="s2">=</span><span class="s3">'coerce'</span><span class="s2">)</span>
+
+<span class="s1">map_center </span><span class="s2">= [</span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Latitude'</span><span class="s2">].</span><span class="s1">mean</span><span class="s2">(), </span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Longitude'</span><span class="s2">].</span><span class="s1">mean</span><span class="s2">()]</span>
+<span class="s1">restaurant_map </span><span class="s2">= </span><span class="s1">folium</span><span class="s2">.</span><span class="s1">Map</span><span class="s2">(</span><span class="s1">location</span><span class="s2">=</span><span class="s1">map_center</span><span class="s2">, </span><span class="s1">zoom_start</span><span class="s2">=</span><span class="s4">12</span><span class="s2">)</span>
+<span class="s0">for </span><span class="s1">_</span><span class="s2">, </span><span class="s1">row </span><span class="s0">in </span><span class="s1">Data</span><span class="s2">.</span><span class="s1">iterrows</span><span class="s2">():</span>
+    <span class="s0">if not </span><span class="s1">pd</span><span class="s2">.</span><span class="s1">isna</span><span class="s2">(</span><span class="s1">row</span><span class="s2">[</span><span class="s3">'Latitude'</span><span class="s2">]) </span><span class="s0">and not </span><span class="s1">pd</span><span class="s2">.</span><span class="s1">isna</span><span class="s2">(</span><span class="s1">row</span><span class="s2">[</span><span class="s3">'Longitude'</span><span class="s2">]):</span>
+        <span class="s1">folium</span><span class="s2">.</span><span class="s1">Marker</span><span class="s2">(</span>
+            <span class="s1">location</span><span class="s2">=[</span><span class="s1">row</span><span class="s2">[</span><span class="s3">'Latitude'</span><span class="s2">], </span><span class="s1">row</span><span class="s2">[</span><span class="s3">'Longitude'</span><span class="s2">]],</span>
+            <span class="s1">popup</span><span class="s2">=</span><span class="s3">f&quot;Restaurant: </span><span class="s0">{</span><span class="s1">row</span><span class="s2">[</span><span class="s3">'Restaurant ID'</span><span class="s2">]</span><span class="s0">}</span><span class="s3">&lt;br&gt;Cuisine: </span><span class="s0">{</span><span class="s1">row</span><span class="s2">[</span><span class="s3">'Cuisines'</span><span class="s2">]</span><span class="s0">}</span><span class="s3">&quot;</span><span class="s2">,</span>
+            <span class="s1">icon</span><span class="s2">=</span><span class="s1">folium</span><span class="s2">.</span><span class="s1">Icon</span><span class="s2">(</span><span class="s1">color</span><span class="s2">=</span><span class="s3">&quot;blue&quot;</span><span class="s2">, </span><span class="s1">icon</span><span class="s2">=</span><span class="s3">&quot;info-sign&quot;</span><span class="s2">)</span>
+        <span class="s2">).</span><span class="s1">add_to</span><span class="s2">(</span><span class="s1">restaurant_map</span><span class="s2">)</span>
+<span class="s1">restaurant_map</span><span class="s2">.</span><span class="s1">save</span><span class="s2">(</span><span class="s3">&quot;restaurant_locations.html&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">&quot;Map has been created and saved as 'restaurant_locations.html'.&quot;</span><span class="s2">)</span>
+
+
+<span class="s5"># PATTERNS OR CLUSTERS OF RESTAURANTS IN SPECIFIC AREAS</span>
+
+<span class="s1">coordinates </span><span class="s2">= </span><span class="s1">Data</span><span class="s2">[[</span><span class="s3">'Latitude'</span><span class="s2">, </span><span class="s3">'Longitude'</span><span class="s2">]]</span>
+<span class="s1">coordinates </span><span class="s2">= </span><span class="s1">coordinates</span><span class="s2">.</span><span class="s1">dropna</span><span class="s2">()</span>
+<span class="s1">kmeans </span><span class="s2">= </span><span class="s1">KMeans</span><span class="s2">(</span><span class="s1">n_clusters</span><span class="s2">=</span><span class="s4">5</span><span class="s2">, </span><span class="s1">random_state</span><span class="s2">=</span><span class="s4">42</span><span class="s2">)</span>
+<span class="s1">kmeans</span><span class="s2">.</span><span class="s1">fit</span><span class="s2">(</span><span class="s1">coordinates</span><span class="s2">)</span>
+<span class="s1">Data</span><span class="s2">[</span><span class="s3">'Cluster'</span><span class="s2">] = </span><span class="s1">kmeans</span><span class="s2">.</span><span class="s1">labels_</span>
+
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">figure</span><span class="s2">(</span><span class="s1">figsize</span><span class="s2">=(</span><span class="s4">10</span><span class="s2">, </span><span class="s4">8</span><span class="s2">))</span>
+<span class="s0">for </span><span class="s1">cluster </span><span class="s0">in </span><span class="s1">range</span><span class="s2">(</span><span class="s4">5</span><span class="s2">):  </span><span class="s5"># Adjust this number to match the number of clusters</span>
+    <span class="s1">cluster_data </span><span class="s2">= </span><span class="s1">Data</span><span class="s2">[</span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Cluster'</span><span class="s2">] == </span><span class="s1">cluster</span><span class="s2">]</span>
+    <span class="s1">plt</span><span class="s2">.</span><span class="s1">scatter</span><span class="s2">(</span><span class="s1">cluster_data</span><span class="s2">[</span><span class="s3">'Longitude'</span><span class="s2">], </span><span class="s1">cluster_data</span><span class="s2">[</span><span class="s3">'Latitude'</span><span class="s2">], </span><span class="s1">label</span><span class="s2">=</span><span class="s3">f'Cluster </span><span class="s0">{</span><span class="s1">cluster</span><span class="s0">}</span><span class="s3">'</span><span class="s2">, </span><span class="s1">s</span><span class="s2">=</span><span class="s4">10</span><span class="s2">)</span>
+
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">scatter</span><span class="s2">(</span><span class="s1">kmeans</span><span class="s2">.</span><span class="s1">cluster_centers_</span><span class="s2">[:, </span><span class="s4">1</span><span class="s2">], </span><span class="s1">kmeans</span><span class="s2">.</span><span class="s1">cluster_centers_</span><span class="s2">[:, </span><span class="s4">0</span><span class="s2">], </span><span class="s1">c</span><span class="s2">=</span><span class="s3">'red'</span><span class="s2">, </span><span class="s1">marker</span><span class="s2">=</span><span class="s3">'x'</span><span class="s2">, </span><span class="s1">s</span><span class="s2">=</span><span class="s4">100</span><span class="s2">, </span><span class="s1">label</span><span class="s2">=</span><span class="s3">'Centers'</span><span class="s2">)</span>
+
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">title</span><span class="s2">(</span><span class="s3">'Clusters of Restaurants'</span><span class="s2">, </span><span class="s1">fontsize</span><span class="s2">=</span><span class="s4">16</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">xlabel</span><span class="s2">(</span><span class="s3">'Longitude'</span><span class="s2">, </span><span class="s1">fontsize</span><span class="s2">=</span><span class="s4">12</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">ylabel</span><span class="s2">(</span><span class="s3">'Latitude'</span><span class="s2">, </span><span class="s1">fontsize</span><span class="s2">=</span><span class="s4">12</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">legend</span><span class="s2">()</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">grid</span><span class="s2">()</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">show</span><span class="s2">()</span>
+<span class="s0">for </span><span class="s1">cluster </span><span class="s0">in </span><span class="s1">range</span><span class="s2">(</span><span class="s4">5</span><span class="s2">):</span>
+    <span class="s1">cluster_data </span><span class="s2">= </span><span class="s1">Data</span><span class="s2">[</span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Cluster'</span><span class="s2">] == </span><span class="s1">cluster</span><span class="s2">]</span>
+    <span class="s1">print</span><span class="s2">(</span><span class="s3">f&quot;Cluster </span><span class="s0">{</span><span class="s1">cluster</span><span class="s0">}</span><span class="s3">: </span><span class="s0">{</span><span class="s1">len</span><span class="s2">(</span><span class="s1">cluster_data</span><span class="s2">)</span><span class="s0">} </span><span class="s3">restaurants&quot;</span><span class="s2">)</span>
+
+
+
+<span class="s5"># TASK 4 - RESTAURANTS CHAINS</span>
+
+<span class="s5"># IDENTIFY IF THERE ARE ANY RESTAURANTS CHAINS PRESENT IN THE DATASET</span>
+
+<span class="s1">restaurant_counts </span><span class="s2">= </span><span class="s1">Data</span><span class="s2">[</span><span class="s3">'Restaurant Name'</span><span class="s2">].</span><span class="s1">value_counts</span><span class="s2">()</span>
+<span class="s1">restaurant_chains </span><span class="s2">= </span><span class="s1">restaurant_counts</span><span class="s2">[</span><span class="s1">restaurant_counts </span><span class="s2">&gt; </span><span class="s4">1</span><span class="s2">]</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">f&quot;Number of restaurant chains:</span><span class="s0">{</span><span class="s1">len</span><span class="s2">(</span><span class="s1">restaurant_counts </span><span class="s2">&gt; </span><span class="s4">1</span><span class="s2">)</span><span class="s0">}</span><span class="s3">&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">restaurant_chains</span><span class="s2">)</span>
+
+<span class="s5"># RATINGS &amp; POPULARITY OF DIFFERENT RESTAURANT CHAINS</span>
+
+<span class="s1">chain_analysis </span><span class="s2">= </span><span class="s1">Data</span><span class="s2">.</span><span class="s1">groupby</span><span class="s2">(</span><span class="s3">'Restaurant Name'</span><span class="s2">).</span><span class="s1">agg</span><span class="s2">(</span>
+    <span class="s1">Average_Rating</span><span class="s2">=(</span><span class="s3">'Aggregate rating'</span><span class="s2">, </span><span class="s3">'mean'</span><span class="s2">),</span>
+    <span class="s1">Total_Votes</span><span class="s2">=(</span><span class="s3">'Votes'</span><span class="s2">, </span><span class="s3">'sum'</span><span class="s2">),</span>
+    <span class="s1">Location_Count</span><span class="s2">=(</span><span class="s3">'Restaurant Name'</span><span class="s2">, </span><span class="s3">'count'</span><span class="s2">)</span>
+<span class="s2">).</span><span class="s1">reset_index</span><span class="s2">()</span>
+
+<span class="s1">restaurant_chains </span><span class="s2">= </span><span class="s1">chain_analysis</span><span class="s2">[</span><span class="s1">chain_analysis</span><span class="s2">[</span><span class="s3">'Location_Count'</span><span class="s2">] &gt; </span><span class="s4">1</span><span class="s2">]</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">&quot;Sample Data from restaurant_chains:&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">restaurant_chains</span><span class="s2">.</span><span class="s1">head</span><span class="s2">())</span>
+<span class="s1">popular_chains </span><span class="s2">= </span><span class="s1">restaurant_chains</span><span class="s2">.</span><span class="s1">sort_values</span><span class="s2">(</span><span class="s1">by</span><span class="s2">=</span><span class="s3">'Total_Votes'</span><span class="s2">, </span><span class="s1">ascending</span><span class="s2">=</span><span class="s0">False</span><span class="s2">)</span>
+<span class="s1">top_rated_chains </span><span class="s2">= </span><span class="s1">restaurant_chains</span><span class="s2">.</span><span class="s1">sort_values</span><span class="s2">(</span><span class="s1">by</span><span class="s2">=</span><span class="s3">'Average_Rating'</span><span class="s2">,</span><span class="s1">ascending</span><span class="s2">=</span><span class="s0">False</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">&quot;Top Restaurant Chains by Popularity:&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">popular_chains</span><span class="s2">.</span><span class="s1">head</span><span class="s2">())</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">top_rated_chains</span><span class="s2">.</span><span class="s1">head</span><span class="s2">())</span>
+
+
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">figure</span><span class="s2">(</span><span class="s1">figsize</span><span class="s2">=(</span><span class="s4">10</span><span class="s2">, </span><span class="s4">6</span><span class="s2">))</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">scatter</span><span class="s2">(</span><span class="s1">restaurant_chains</span><span class="s2">[</span><span class="s3">'Average_Rating'</span><span class="s2">], </span><span class="s1">restaurant_chains</span><span class="s2">[</span><span class="s3">'Total_Votes'</span><span class="s2">], </span><span class="s1">color</span><span class="s2">=</span><span class="s3">'orange'</span><span class="s2">, </span><span class="s1">edgecolor</span><span class="s2">=</span><span class="s3">'black'</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">xlabel</span><span class="s2">(</span><span class="s3">'Average Rating'</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">ylabel</span><span class="s2">(</span><span class="s3">'Total Votes'</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">title</span><span class="s2">(</span><span class="s3">'Ratings vs Popularity for Restaurant Chains'</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">grid</span><span class="s2">(</span><span class="s0">True</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">show</span><span class="s2">()</span>
+
+</pre>
+</body>
+</html>
